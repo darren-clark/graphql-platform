@@ -53,6 +53,11 @@ public abstract partial class ScalarType
         }
     }
 
+    /// <summary>
+    /// Defines if instances of this directive type are publicly visible through introspection.
+    /// </summary>
+    internal bool IsPublic { get; private set; }
+
     public IDirectiveCollection Directives { get; private set; }
 
     public ScalarTypeDefinitionNode? SyntaxNode { get; private set; }
@@ -244,4 +249,6 @@ public abstract partial class ScalarType
         value = default!;
         return false;
     }
+
+
 }

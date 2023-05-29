@@ -180,4 +180,7 @@
   <data name="ResolveReference_MustBeMethod" xml:space="preserve">
     <value>The expression must refer to a method representing the reference resolver.</value>
   </data>
+  <data name="LinkDirective_Description" xml:space="preserve">
+    <value>Used to import an external schema.</value>
+  </data>
 </root>

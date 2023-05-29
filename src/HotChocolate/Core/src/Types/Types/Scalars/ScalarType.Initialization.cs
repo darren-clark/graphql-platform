@@ -60,5 +60,6 @@ public abstract partial class ScalarType
         var directiveDefinitions = Array.Empty<DirectiveDefinition>();
         Directives = DirectiveCollection.CreateAndComplete(context, this, directiveDefinitions);
         SyntaxNode = definition.SyntaxNode;
+        IsPublic = definition.IsPublic;
     }
 }

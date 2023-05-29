@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+using HotChocolate.ApolloFederation;
 using HotChocolate.ApolloFederation.Constants;
 using HotChocolate.ApolloFederation.Descriptors;
 using HotChocolate.Language;
@@ -221,6 +224,31 @@ public static partial class ApolloFederationDescriptorExtensions
         descriptor
             .Extend()
             .OnBeforeCreate(d => d.ContextData[ExtendMarker] = true);
+
+        return descriptor;
+    }
+
+    public static ISchemaTypeDescriptor Link(this ISchemaTypeDescriptor descriptor, string url,
+        IReadOnlyList<Import>? import = null, string? @as = null, string? @purpose = null)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Link,
+            new[]
+            {
+                new ArgumentNode(WellKnownArgumentNames.Url, new StringValueNode(url)),
+                new ArgumentNode(WellKnownArgumentNames.Import,
+                    import == null
+                        ? NullValueNode.Default
+                        : new ListValueNode(import.Select(i => i.ToValueNode()).ToArray())),
+                new ArgumentNode(WellKnownArgumentNames.As,
+                    @as == null ? NullValueNode.Default : new StringValueNode(@as)),
+                new ArgumentNode(WellKnownArgumentNames.For,
+                    @purpose == null ? NullValueNode.Default : new StringValueNode(@purpose))
+            });
 
         return descriptor;
     }
