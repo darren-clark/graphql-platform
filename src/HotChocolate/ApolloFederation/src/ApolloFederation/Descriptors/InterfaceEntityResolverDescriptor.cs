@@ -15,21 +15,21 @@ namespace HotChocolate.ApolloFederation.Descriptors;
 /// <summary>
 /// The entity descriptor allows to specify a reference resolver.
 /// </summary>
-public sealed class EntityResolverDescriptor<TEntity>
+public sealed class InterfaceEntityResolverDescriptor<TEntity>
     : DescriptorBase<EntityResolverDefinition>
-    , IEntityResolverDescriptor<IObjectTypeDescriptor>
-    , IEntityResolverDescriptor<IObjectTypeDescriptor, TEntity>
+    , IEntityResolverDescriptor<IInterfaceTypeDescriptor>
+    , IEntityResolverDescriptor<IInterfaceTypeDescriptor, TEntity>
 {
-    private readonly IObjectTypeDescriptor _typeDescriptor;
+    private readonly IInterfaceTypeDescriptor _typeDescriptor;
 
-    internal EntityResolverDescriptor(
-        IObjectTypeDescriptor<TEntity> descriptor)
-        : this((ObjectTypeDescriptor)descriptor, typeof(TEntity))
+    internal InterfaceEntityResolverDescriptor(
+        IInterfaceTypeDescriptor<TEntity> descriptor)
+        : this((InterfaceTypeDescriptor)descriptor, typeof(TEntity))
     {
     }
 
-    internal EntityResolverDescriptor(
-        IObjectTypeDescriptor descriptor,
+    internal InterfaceEntityResolverDescriptor(
+        IInterfaceTypeDescriptor descriptor,
         Type? entityType = null)
         : base(descriptor.Extend().Context)
     {
@@ -42,7 +42,7 @@ public sealed class EntityResolverDescriptor<TEntity>
         Definition.EntityType = entityType;
     }
 
-    private void OnCompleteDefinition(ObjectTypeDefinition definition)
+    private void OnCompleteDefinition(InterfaceTypeDefinition definition)
     {
         if (Definition.ResolverDefinition is not null)
         {
@@ -66,11 +66,11 @@ public sealed class EntityResolverDescriptor<TEntity>
     protected internal override EntityResolverDefinition Definition { get; protected set; } = new();
 
     /// <inheritdoc cref="IEntityResolverDescriptor"/>
-    public IObjectTypeDescriptor ResolveReference(
+    public IInterfaceTypeDescriptor ResolveReference(
         FieldResolverDelegate fieldResolver)
         => ResolveReference(fieldResolver, Array.Empty<string[]>());
 
-    private IObjectTypeDescriptor ResolveReference(
+    private IInterfaceTypeDescriptor ResolveReference(
         FieldResolverDelegate fieldResolver,
         IReadOnlyList<string[]> required)
     {
@@ -89,12 +89,12 @@ public sealed class EntityResolverDescriptor<TEntity>
     }
 
     /// <inheritdoc cref="IEntityResolverDescriptor{T}"/>
-    public IObjectTypeDescriptor ResolveReferenceWith(
+    public IInterfaceTypeDescriptor ResolveReferenceWith(
         Expression<Func<TEntity, object?>> method)
         => ResolveReferenceWith<TEntity>(method);
 
     /// <inheritdoc cref="IEntityResolverDescriptor"/>
-    public IObjectTypeDescriptor ResolveReferenceWith<TResolver>(
+    public IInterfaceTypeDescriptor ResolveReferenceWith<TResolver>(
         Expression<Func<TResolver, object?>> method)
     {
         if (method is null)
@@ -115,14 +115,14 @@ public sealed class EntityResolverDescriptor<TEntity>
     }
 
     /// <inheritdoc cref="IEntityResolverDescriptor"/>
-    public IObjectTypeDescriptor ResolveReferenceWith<TResolver>()
+    public IInterfaceTypeDescriptor ResolveReferenceWith<TResolver>()
         => ResolveReferenceWith(
             Context.TypeInspector.GetNodeResolverMethod(
                 Definition.EntityType ?? typeof(TResolver),
                 typeof(TResolver))!);
 
     /// <inheritdoc cref="IEntityResolverDescriptor"/>
-    public IObjectTypeDescriptor ResolveReferenceWith(MethodInfo method)
+    public IInterfaceTypeDescriptor ResolveReferenceWith(MethodInfo method)
     {
         if (method is null)
         {
@@ -142,7 +142,7 @@ public sealed class EntityResolverDescriptor<TEntity>
     }
 
     /// <inheritdoc cref="IEntityResolverDescriptor"/>
-    public IObjectTypeDescriptor ResolveReferenceWith(Type type)
+    public IInterfaceTypeDescriptor ResolveReferenceWith(Type type)
         => ResolveReferenceWith(
             Context.TypeInspector.GetNodeResolverMethod(
                 Definition.EntityType ?? type,

@@ -7,7 +7,7 @@ namespace HotChocolate.ApolloFederation.Descriptors;
 /// <summary>
 /// The entity descriptor allows to specify a reference resolver.
 /// </summary>
-public interface IEntityResolverDescriptor
+public interface IEntityResolverDescriptor<out TDescriptor>
 {
     /// <summary>
     /// Resolve an entity from its representation.
@@ -18,7 +18,7 @@ public interface IEntityResolverDescriptor
     /// <returns>
     /// Returns the descriptor for configuration chaining.
     /// </returns>
-    IObjectTypeDescriptor ResolveReference(
+    TDescriptor ResolveReference(
         FieldResolverDelegate fieldResolver);
 
     /// <summary>
@@ -33,7 +33,7 @@ public interface IEntityResolverDescriptor
     /// <returns>
     /// Returns the descriptor for configuration chaining.
     /// </returns>
-    IObjectTypeDescriptor ResolveReferenceWith<TResolver>(
+    TDescriptor ResolveReferenceWith<TResolver>(
         Expression<Func<TResolver, object?>> method);
 
     /// <summary>
@@ -45,7 +45,7 @@ public interface IEntityResolverDescriptor
     /// <returns>
     /// Returns the descriptor for configuration chaining.
     /// </returns>
-    IObjectTypeDescriptor ResolveReferenceWith<TResolver>();
+    TDescriptor ResolveReferenceWith<TResolver>();
 
     /// <summary>
     /// Resolve an entity from its representation.
@@ -56,7 +56,7 @@ public interface IEntityResolverDescriptor
     /// <returns>
     /// Returns the descriptor for configuration chaining.
     /// </returns>
-    IObjectTypeDescriptor ResolveReferenceWith(MethodInfo method);
+    TDescriptor ResolveReferenceWith(MethodInfo method);
 
     /// <summary>
     /// Resolve an entity from its representation.
@@ -67,13 +67,13 @@ public interface IEntityResolverDescriptor
     /// <returns>
     /// Returns the descriptor for configuration chaining.
     /// </returns>
-    IObjectTypeDescriptor ResolveReferenceWith(Type type);
+    TDescriptor ResolveReferenceWith(Type type);
 }
 
 /// <summary>
 /// The entity descriptor allows to specify a reference resolver.
 /// </summary>
-public interface IEntityResolverDescriptor<TEntity>
+public interface IEntityResolverDescriptor<TDescriptor, TEntity>
 {
     /// <summary>
     /// Resolve an entity from its representation.
@@ -84,7 +84,7 @@ public interface IEntityResolverDescriptor<TEntity>
     /// <returns>
     /// Returns the descriptor for configuration chaining.
     /// </returns>
-    IObjectTypeDescriptor ResolveReference(
+    TDescriptor ResolveReference(
         FieldResolverDelegate fieldResolver);
 
     /// <summary>
@@ -96,7 +96,7 @@ public interface IEntityResolverDescriptor<TEntity>
     /// <returns>
     /// Returns the descriptor for configuration chaining.
     /// </returns>
-    IObjectTypeDescriptor ResolveReferenceWith(
+    TDescriptor ResolveReferenceWith(
         Expression<Func<TEntity, object?>> method);
 
     /// <summary>
@@ -111,7 +111,7 @@ public interface IEntityResolverDescriptor<TEntity>
     /// <returns>
     /// Returns the descriptor for configuration chaining.
     /// </returns>
-    IObjectTypeDescriptor ResolveReferenceWith<TResolver>(
+    TDescriptor ResolveReferenceWith<TResolver>(
         Expression<Func<TResolver, object?>> method);
 
     /// <summary>
@@ -123,7 +123,7 @@ public interface IEntityResolverDescriptor<TEntity>
     /// <returns>
     /// Returns the descriptor for configuration chaining.
     /// </returns>
-    IObjectTypeDescriptor ResolveReferenceWith<TResolver>();
+    TDescriptor ResolveReferenceWith<TResolver>();
 
     /// <summary>
     /// Resolve an entity from its representation.
@@ -134,7 +134,7 @@ public interface IEntityResolverDescriptor<TEntity>
     /// <returns>
     /// Returns the descriptor for configuration chaining.
     /// </returns>
-    IObjectTypeDescriptor ResolveReferenceWith(MethodInfo method);
+    TDescriptor ResolveReferenceWith(MethodInfo method);
 
     /// <summary>
     /// Resolve an entity from its representation.
@@ -145,5 +145,5 @@ public interface IEntityResolverDescriptor<TEntity>
     /// <returns>
     /// Returns the descriptor for configuration chaining.
     /// </returns>
-    IObjectTypeDescriptor ResolveReferenceWith(Type type);
+    TDescriptor ResolveReferenceWith(Type type);
 }

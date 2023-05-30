@@ -45,7 +45,7 @@ internal sealed class ReferenceResolverArgumentExpressionBuilder
         var dataKey = Expression.Constant(DataField, typeof(string));
         var typeKey = Expression.Constant(TypeField, typeof(string));
         var value = BuildGetter(param, dataKey, context.ResolverContext, typeof(IValueNode));
-        var objectType = BuildGetter(param, typeKey, context.ResolverContext, typeof(ObjectType));
+        var objectType = BuildGetter(param, typeKey, context.ResolverContext, typeof(IType));
         var getValueMethod = _getValue.MakeGenericMethod(param.ParameterType);
         Expression getValue = Expression.Call(getValueMethod, value, objectType, path);
         return getValue;

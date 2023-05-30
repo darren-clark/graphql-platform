@@ -35,7 +35,7 @@ internal sealed class FederationTypeInterceptor : TypeInterceptor
             .GetMethod(
                 nameof(ReferenceResolverHelper.Invalid),
                 BindingFlags.Static | BindingFlags.Public)!;
-    private readonly List<ObjectType> _entityTypes = new();
+    private readonly List<ITypeSystemMember> _entityTypes = new();
 
     public override void OnAfterInitialize(
         ITypeDiscoveryContext discoveryContext,
@@ -56,6 +56,24 @@ internal sealed class FederationTypeInterceptor : TypeInterceptor
             AggregatePropertyLevelKeyDirectives(
                 objectType,
                 objectTypeDefinition,
+                discoveryContext);
+        }
+
+        if (discoveryContext.Type is InterfaceType interfaceType &&
+            definition is InterfaceTypeDefinition interfaceTypeDefinition)
+        {
+            ApplyMethodLevelReferenceResolvers(
+                interfaceType,
+                interfaceTypeDefinition,
+                discoveryContext);
+
+            // AddToUnionIfHasTypeLevelKeyDirective(
+            //     interfaceType,
+            //     interfaceTypeDefinition);
+
+            AggregatePropertyLevelKeyDirectives(
+                interfaceType,
+                interfaceTypeDefinition,
                 discoveryContext);
         }
     }
@@ -85,18 +103,25 @@ internal sealed class FederationTypeInterceptor : TypeInterceptor
         ITypeCompletionContext completionContext,
         DefinitionBase definition)
     {
-        if (completionContext.Type is ObjectType type &&
-            definition is ObjectTypeDefinition typeDef)
+        if (completionContext.Type is ObjectType objectType &&
+            definition is ObjectTypeDefinition objectTypeDefinition)
         {
-            CompleteExternalFieldSetters(type, typeDef);
-            CompleteReferenceResolver(typeDef);
+            CompleteExternalFieldSetters(objectType, objectTypeDefinition);
+            CompleteReferenceResolver(objectTypeDefinition);
+        }
+
+        if (completionContext.Type is InterfaceType &&
+            definition is InterfaceTypeDefinition interfaceTypeDefinition)
+        {
+            CompleteReferenceResolver(interfaceTypeDefinition);
         }
     }
 
     private void CompleteExternalFieldSetters(ObjectType type, ObjectTypeDefinition typeDef)
         => ExternalSetterExpressionHelper.TryAddExternalSetter(type, typeDef);
 
-    private void CompleteReferenceResolver(ObjectTypeDefinition typeDef)
+
+    private void CompleteReferenceResolver(DefinitionBase typeDef)
     {
         if (typeDef.GetContextData().TryGetValue(EntityResolver, out var value) &&
             value is IReadOnlyList<ReferenceResolverDefinition> resolvers)
@@ -199,6 +224,33 @@ internal sealed class FederationTypeInterceptor : TypeInterceptor
         }
     }
 
+    private void ApplyMethodLevelReferenceResolvers(
+        InterfaceType objectType,
+        InterfaceTypeDefinition objectTypeDefinition,
+        ITypeDiscoveryContext discoveryContext)
+    {
+        if (objectType.RuntimeType != typeof(object))
+        {
+            var descriptorContext = discoveryContext.DescriptorContext;
+            var typeInspector = discoveryContext.TypeInspector;
+            var descriptor = InterfaceTypeDescriptor.From(descriptorContext, objectTypeDefinition);
+
+            foreach (var possibleReferenceResolver in
+                     objectType.RuntimeType.GetMethods(BindingFlags.Static | BindingFlags.Public))
+            {
+                if (possibleReferenceResolver.IsDefined(typeof(ReferenceResolverAttribute)))
+                {
+                    typeInspector.ApplyAttributes(
+                        descriptorContext,
+                        descriptor,
+                        possibleReferenceResolver);
+                }
+            }
+
+            descriptor.CreateDefinition();
+        }
+    }
+
     private void AddToUnionIfHasTypeLevelKeyDirective(
         ObjectType objectType,
         ObjectTypeDefinition objectTypeDefinition)
@@ -211,6 +263,18 @@ internal sealed class FederationTypeInterceptor : TypeInterceptor
         }
     }
 
+    // private void AddToUnionIfHasTypeLevelKeyDirective(
+    //     InterfaceType objectType,
+    //     InterfaceTypeDefinition objectTypeDefinition)
+    // {
+    //     if (objectTypeDefinition.Directives.Any(
+    //             d => d.Value is DirectiveNode { Name.Value: WellKnownTypeNames.Key }) ||
+    //         objectTypeDefinition.Fields.Any(f => f.ContextData.ContainsKey(WellKnownTypeNames.Key)))
+    //     {
+    //         _entityTypes.Add(objectType);
+    //     }
+    // }
+
     private void AggregatePropertyLevelKeyDirectives(
         ObjectType objectType,
         ObjectTypeDefinition objectTypeDefinition,
@@ -221,6 +285,52 @@ internal sealed class FederationTypeInterceptor : TypeInterceptor
         if (objectTypeDefinition.Fields.Any(f => f.ContextData.ContainsKey(KeyMarker)))
         {
             IReadOnlyList<ObjectFieldDefinition> fields = objectTypeDefinition.Fields;
+            var fieldSet = new StringBuilder();
+
+            foreach (var fieldDefinition in fields)
+            {
+                if (fieldDefinition.ContextData.ContainsKey(KeyMarker))
+                {
+                    if (fieldSet.Length > 0)
+                    {
+                        fieldSet.Append(' ');
+                    }
+
+                    fieldSet.Append(fieldDefinition.Name);
+                }
+            }
+
+            // add the key directive with the dynamically generated field set.
+            AddKeyDirective(objectTypeDefinition, fieldSet.ToString());
+
+            // register dependency to the key directive so that it is completed before
+            // we complete this type.
+            foreach (var directiveDefinition in objectTypeDefinition.Directives)
+            {
+                discoveryContext.Dependencies.Add(
+                    new TypeDependency(
+                        directiveDefinition.Type,
+                        TypeDependencyFulfilled.Completed));
+
+                discoveryContext.Dependencies.Add(new(directiveDefinition.Type));
+            }
+
+            // since this type has now a key directive we also need to add this type to
+            // the _Entity union type.
+            _entityTypes.Add(objectType);
+        }
+    }
+
+    private void AggregatePropertyLevelKeyDirectives(
+        InterfaceType objectType,
+        InterfaceTypeDefinition objectTypeDefinition,
+        ITypeDiscoveryContext discoveryContext)
+    {
+        // if we find key markers on our fields, we need to construct the key directive
+        // from the annotated fields.
+        if (objectTypeDefinition.Fields.Any(f => f.ContextData.ContainsKey(KeyMarker)))
+        {
+            IReadOnlyList<InterfaceFieldDefinition> fields = objectTypeDefinition.Fields;
             var fieldSet = new StringBuilder();
 
             foreach (var fieldDefinition in fields)
@@ -272,7 +382,7 @@ internal sealed class FederationTypeInterceptor : TypeInterceptor
     }
 
     private static void AddKeyDirective(
-        ObjectTypeDefinition objectTypeDefinition,
+        IHasDirectiveDefinition objectTypeDefinition,
         string fieldSet)
     {
         var directiveNode = new DirectiveNode(

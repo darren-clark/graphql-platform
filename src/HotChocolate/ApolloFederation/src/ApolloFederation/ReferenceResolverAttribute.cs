@@ -23,25 +23,38 @@ public class ReferenceResolverAttribute : DescriptorAttribute
         IDescriptor descriptor,
         ICustomAttributeProvider element)
     {
+
         if (descriptor is IObjectTypeDescriptor objectTypeDescriptor)
         {
             switch (element)
             {
                 case Type type:
-                    OnConfigure(objectTypeDescriptor, type);
+                    OnConfigure(new EntityResolverDescriptor<object>(objectTypeDescriptor), type);
                     break;
 
                 case MethodInfo method:
-                    OnConfigure(objectTypeDescriptor, method);
+                    OnConfigure(new EntityResolverDescriptor<object>(objectTypeDescriptor), method);
+                    break;
+            }
+        }
+
+        if (descriptor is IInterfaceTypeDescriptor interfaceTypeDescriptor)
+        {
+            switch (element)
+            {
+                case Type type:
+                    OnConfigure(new InterfaceEntityResolverDescriptor<object>(interfaceTypeDescriptor), type);
+                    break;
+
+                case MethodInfo method:
+                    OnConfigure(new InterfaceEntityResolverDescriptor<object>(interfaceTypeDescriptor), method);
                     break;
             }
         }
     }
 
-    private void OnConfigure(IObjectTypeDescriptor descriptor, Type type)
+    private void OnConfigure<TDescriptor>(IEntityResolverDescriptor<TDescriptor,object> entityResolverDescriptor, Type type)
     {
-        var entityResolverDescriptor = new EntityResolverDescriptor<object>(descriptor);
-
         if (EntityResolverType is not null)
         {
             if (EntityResolver is not null)
@@ -81,9 +94,8 @@ public class ReferenceResolverAttribute : DescriptorAttribute
         }
     }
 
-    private void OnConfigure(IObjectTypeDescriptor descriptor, MethodInfo method)
+    private void OnConfigure<TDescriptor>(IEntityResolverDescriptor<TDescriptor,object> entityResolverDescriptor, MethodInfo method)
     {
-        var entityResolverDescriptor = new EntityResolverDescriptor<object>(descriptor);
         entityResolverDescriptor.ResolveReferenceWith(method);
     }
 }

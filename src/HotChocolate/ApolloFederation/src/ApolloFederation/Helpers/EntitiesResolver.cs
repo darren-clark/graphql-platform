@@ -25,7 +25,7 @@ internal static class EntitiesResolver
 
             var current = representations[i];
 
-            if (schema.TryGetType<ObjectType>(current.TypeName, out var objectType) &&
+            if (schema.TryGetType<INamedType>(current.TypeName, out var objectType) &&
                 objectType.ContextData.TryGetValue(EntityResolver, out var value) &&
                 value is FieldResolverDelegate resolver)
             {
@@ -36,7 +36,7 @@ internal static class EntitiesResolver
                 entityContext.SetLocalState(TypeField, objectType);
                 entityContext.SetLocalState(DataField, current.Data);
 
-                tasks[i] = resolver.Invoke(entityContext).AsTask();
+                    tasks[i] = resolver.Invoke(entityContext).AsTask();
             }
             else
             {

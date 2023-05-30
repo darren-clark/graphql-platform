@@ -71,7 +71,7 @@ public static partial class ApolloFederationDescriptorExtensions
     /// <exception cref="ArgumentException">
     /// <paramref name="fieldSet"/> is <c>null</c> or <see cref="string.Empty"/>.
     /// </exception>
-    public static IEntityResolverDescriptor Key(
+    public static IEntityResolverDescriptor<IObjectTypeDescriptor> Key(
         this IObjectTypeDescriptor descriptor,
         string fieldSet)
     {
