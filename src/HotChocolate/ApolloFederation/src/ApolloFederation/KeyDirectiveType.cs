@@ -3,6 +3,9 @@ using HotChocolate.ApolloFederation.Properties;
 
 namespace HotChocolate.ApolloFederation;
 
+using HotChocolate.Language;
+using DirectiveLocation = HotChocolate.Types.DirectiveLocation;
+
 /// <summary>
 /// The @key directive is used to indicate a combination of fields that
 /// can be used to uniquely identify and fetch an object or interface.
@@ -21,5 +24,8 @@ public sealed class KeyDirectiveType : DirectiveType
             .Description(FederationResources.KeyDirective_Description)
             .Location(DirectiveLocation.Object | DirectiveLocation.Interface)
             .Repeatable()
-            .FieldsArgument();
+            .FieldsArgument()
+            .Argument(WellKnownArgumentNames.Resolvable)
+            .Type<NonNullType<BooleanType>>()
+            .DefaultValue(new BooleanValueNode(true));
 }
