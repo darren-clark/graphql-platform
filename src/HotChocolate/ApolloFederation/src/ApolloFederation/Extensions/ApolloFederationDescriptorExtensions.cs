@@ -9,6 +9,9 @@ using static HotChocolate.ApolloFederation.Constants.WellKnownContextData;
 
 namespace HotChocolate.Types;
 
+using HotChocolate.Types.Descriptors.Definitions;
+using HotChocolate.Types.Helpers;
+
 /// <summary>
 /// Provides extensions for type system descriptors.
 /// </summary>
@@ -392,7 +395,8 @@ public static partial class ApolloFederationDescriptorExtensions
             throw new ArgumentNullException(nameof(descriptor));
         }
 
-
+        var urlNode = new StringValueNode(url);
+        var wut = urlNode.ToString();
         descriptor.Directive(WellKnownTypeNames.Link,
             new[]
             {

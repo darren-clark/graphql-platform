@@ -18,14 +18,34 @@ using DirectiveLocation = HotChocolate.Types.DirectiveLocation;
 /// </summary>
 public sealed class KeyDirectiveType : DirectiveType
 {
+
+    private readonly FederationVersion _version;
+
+    public KeyDirectiveType():this(FederationVersion.v1)
+    {
+
+    }
+    public KeyDirectiveType(FederationVersion version)
+    {
+        _version = version;
+    }
+
     protected override void Configure(IDirectiveTypeDescriptor descriptor)
-        => descriptor
+    {
+        descriptor = descriptor
             .Name(WellKnownTypeNames.Key)
             .Description(FederationResources.KeyDirective_Description)
             .Location(DirectiveLocation.Object | DirectiveLocation.Interface)
             .Repeatable()
-            .FieldsArgument()
-            .Argument(WellKnownArgumentNames.Resolvable)
-            .Type<NonNullType<BooleanType>>()
-            .DefaultValue(new BooleanValueNode(true));
+            .FieldsArgument();
+
+        // V2.0 adds the resolvable argument
+        if (_version != FederationVersion.v1)
+        {
+            descriptor
+                .Argument(WellKnownArgumentNames.Resolvable)
+                .Type<NonNullType<BooleanType>>()
+                .DefaultValue(new BooleanValueNode(true));
+        }
+    }
 }

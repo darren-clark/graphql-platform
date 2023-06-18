@@ -4,16 +4,17 @@ using HotChocolate.Execution;
 using HotChocolate.Execution.Processing;
 using HotChocolate.Language;
 using Snapshooter.Xunit;
-using Xunit;
 
-namespace HotChocolate.ApolloFederation.CertificationSchema.AnnotationBased;
+namespace HotChocolate.ApolloFederation.V2CertificationSchema.AnnotationBased;
 
 public class CertificationTests
 {
     [Fact]
     public async Task Schema_Snapshot()
     {
-        var executor = await SchemaSetup.CreateAsync();
+        var type = typeof(Types.ProductDimension);
+        var attributes = type.GetCustomAttributes(true);
+        var executor = await SchemaSetup.CreateAsync(FederationVersion.v2_0);
         executor.Schema.Print().MatchSnapshot();
     }
 
@@ -21,7 +22,7 @@ public class CertificationTests
     public async Task Subgraph_SDL()
     {
         // arrange
-        var executor = await SchemaSetup.CreateAsync();
+        var executor = await SchemaSetup.CreateAsync(FederationVersion.v2_0);
 
         // act
         var result = await executor.ExecuteAsync(
@@ -44,9 +45,9 @@ public class CertificationTests
     public async Task Product_By_Id()
     {
         // arrange
-        var executor = await SchemaSetup.CreateAsync();
+        var executor = await SchemaSetup.CreateAsync(FederationVersion.v2_0);
 
-        // ac   t
+        // act
         var result = await executor.ExecuteAsync(
             @"query ($representations: [_Any!]!) {
                 _entities(representations: $representations) {
@@ -73,7 +74,7 @@ public class CertificationTests
     public async Task Product_By_Package()
     {
         // arrange
-        var executor = await SchemaSetup.CreateAsync();
+        var executor = await SchemaSetup.CreateAsync(FederationVersion.v2_0);
 
         // act
         var result = await executor.ExecuteAsync(
@@ -103,7 +104,7 @@ public class CertificationTests
     public async Task Product_By_Variation()
     {
         // arrange
-        var executor = await SchemaSetup.CreateAsync();
+        var executor = await SchemaSetup.CreateAsync(FederationVersion.v2_0);
 
         // act
         var result = await executor.ExecuteAsync(
@@ -135,7 +136,7 @@ public class CertificationTests
     public async Task Provides()
     {
         // arrange
-        var executor = await SchemaSetup.CreateAsync();
+        var executor = await SchemaSetup.CreateAsync(FederationVersion.v2_0);
 
         // act
         var result = await executor.ExecuteAsync(
@@ -157,7 +158,7 @@ public class CertificationTests
     public async Task Requires()
     {
         // arrange
-        var executor = await SchemaSetup.CreateAsync();
+        var executor = await SchemaSetup.CreateAsync(FederationVersion.v2_0);
 
         // act
         var result = await executor.ExecuteAsync(

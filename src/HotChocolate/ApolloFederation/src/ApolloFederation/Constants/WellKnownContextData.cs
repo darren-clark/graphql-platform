@@ -6,6 +6,7 @@ internal static class WellKnownContextData
     public const string ExtendMarker = "HotChocolate.ApolloFederation.Extend";
     public const string ExternalSetter = "HotChocolate.ApolloFederation.ExternalSetter";
     public const string EntityResolver = "HotChocolate.ApolloFederation.EntityResolver";
+    public const string FederationVersionKey = "HotChocolate.ApolloFederation.FederationVersion";
     public const string DataField = "data";
     public const string TypeField = "__type";
 }

@@ -35,8 +35,19 @@ public static class ApolloFederationSchemaBuilderExtensions
         builder.AddType<FieldSetType>();
         builder.AddType<ExternalDirectiveType>();
         builder.AddType<ProvidesDirectiveType>();
-        builder.AddType<KeyDirectiveType>();
         builder.AddType<RequiresDirectiveType>();
+        builder.AddDirectiveType(new KeyDirectiveType(version));
+        // V2.0 added directives.
+        if (version != FederationVersion.v1)
+        {
+            builder.AddType<RequiresDirectiveType>();
+            builder.AddType<LinkDirectiveType>();
+            builder.AddType<OverrideDirectiveType>();
+            builder.AddType<InaccessibleDirectiveType>();
+            builder.AddType<ShareableDirectiveType>();
+        }
+
+        builder.ContextData[FederationVersionKey] = version;
         builder.TryAddTypeInterceptor<FederationTypeInterceptor>();
         return builder;
     }

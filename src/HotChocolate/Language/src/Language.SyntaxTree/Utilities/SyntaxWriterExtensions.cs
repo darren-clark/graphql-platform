@@ -177,9 +177,9 @@ public static class SyntaxWriterExtensions
                 WriteEscapeCharacterHelper(writer, '\\');
                 break;
 
-            case '/':
-                WriteEscapeCharacterHelper(writer, '/');
-                break;
+            // case '/':
+            //     WriteEscapeCharacterHelper(writer, '/');
+            //     break;
 
             case '\b':
                 WriteEscapeCharacterHelper(writer, 'b');

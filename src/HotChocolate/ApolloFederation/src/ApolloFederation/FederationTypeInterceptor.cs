@@ -17,6 +17,8 @@ using static HotChocolate.ApolloFederation.Constants.WellKnownContextData;
 
 namespace HotChocolate.ApolloFederation;
 
+using HotChocolate.Types.Helpers;
+
 internal sealed class FederationTypeInterceptor : TypeInterceptor
 {
     private static readonly object _empty = new();
@@ -57,6 +59,14 @@ internal sealed class FederationTypeInterceptor : TypeInterceptor
                 objectType,
                 objectTypeDefinition,
                 discoveryContext);
+        }
+
+        if (discoveryContext.Type is Schema schema &&
+            definition is SchemaTypeDefinition schemaTypeDefinition &&
+            discoveryContext.ContextData.TryGetValue(FederationVersionKey, out var version)
+            )
+        {
+            AddFederationLinks((FederationVersion) version, schema, schemaTypeDefinition, discoveryContext);
         }
     }
 
@@ -283,5 +293,19 @@ internal sealed class FederationTypeInterceptor : TypeInterceptor
 
         objectTypeDefinition.Directives.Add(
             new DirectiveDefinition(directiveNode));
+    }
+
+
+    private void AddFederationLinks(FederationVersion version, Schema schema, SchemaTypeDefinition schemaTypeDefinition, ITypeDiscoveryContext discoveryContext)
+    {
+        if (version == FederationVersion.v1)
+        {
+            return;
+        }
+
+        var descriptorContext = discoveryContext.DescriptorContext;
+        var descriptor = SchemaTypeDescriptor.From(descriptorContext, schemaTypeDefinition);
+        descriptor.Link(WellKnownLinkUrls.Link);
+        descriptor.CreateDefinition();
     }
 }

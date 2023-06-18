@@ -11,9 +11,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\AspNetCore\src\AspNetCore\HotChocolate.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\src\Core\HotChocolate.Core.csproj" />
     <ProjectReference Include="..\..\..\src\ApolloFederation\HotChocolate.ApolloFederation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HotChocolate" Version="13.2.1" />
+    <PackageReference Include="HotChocolate.AspNetCore" Version="13.2.1" />
   </ItemGroup>
 
 </Project>
