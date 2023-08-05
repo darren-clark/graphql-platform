@@ -471,6 +471,38 @@ public class ObjectTypeExtensionTests
 #endif
 
     [Fact]
+    public async Task ObjectTypeExtension_CodeFirst_Extends_Interface_Name()
+    {
+        Snapshot.FullName();
+
+        await new ServiceCollection()
+            .AddGraphQL()
+            .AddQueryType<QueryType>()
+            .AddType<QueryType>()
+            .AddType<MarkerType>()
+            .AddType<BarType>()
+            .AddTypeExtension<ExtensionsType>()
+            .BuildSchemaAsync()
+            .MatchSnapshotAsync();
+    }
+
+    [Fact]
+    public async Task ObjectTypeExtension_CodeFirst_Extends_Interface_Type()
+    {
+        Snapshot.FullName();
+
+        await new ServiceCollection()
+            .AddGraphQL()
+            .AddQueryType<QueryType>()
+            .AddType<QueryType>()
+            .AddType<MarkerType>()
+            .AddType<BarType>()
+            .AddTypeExtension<ExtensionsType2>()
+            .BuildSchemaAsync()
+            .MatchSnapshotAsync();
+    }
+
+    [Fact]
     public async Task BindResolver_With_Property()
     {
         Snapshot.FullName();
@@ -936,9 +968,54 @@ public class ObjectTypeExtensionTests
     }
 #endif
 
+    public class BarType : ObjectType
+    {
+        protected override void Configure(IObjectTypeDescriptor descriptor)
+        {
+            descriptor.Name("Bar")
+                .Field("baz").Type<StringType>()
+                .Resolve(ctx => "def");
+        }
+    }
+
+    // Add foo to any type that implements Marker
+    public class ExtensionsType : ObjectTypeExtension
+    {
+        protected override void Configure(IObjectTypeDescriptor descriptor)
+        {
+            // This should probably be being set by the base.
+            var definition = descriptor.Extend().Definition;
+            definition.IsExtension = true;
+
+            descriptor.Name("Marker");
+            descriptor.Field("foo")
+                .Type<StringType>()
+                .Resolve(ctx => "abc");
+        }
+    }
+
+    // Add foo to any type that implements Marker
+    public class ExtensionsType2 : ObjectTypeExtension<MarkerType>
+    {
+        protected override void Configure(IObjectTypeDescriptor<MarkerType> descriptor)
+        {
+            descriptor.Field("foo")
+                .Type<StringType>()
+                .Resolve(ctx => "abc");
+        }
+    }
+
     public interface IMarker
     {
 
+    }
+
+    public class MarkerType : InterfaceType<IMarker>
+    {
+        protected override void Configure(IInterfaceTypeDescriptor<IMarker> descriptor)
+        {
+            descriptor.Name("Marker");
+        }
     }
 
     public class BindResolver_With_Property_PersonDto
@@ -1164,5 +1241,30 @@ public class ObjectTypeExtensionTests
     public class QueryExtensions
     {
         public string Bar() => "baz";
+    }
+
+    public class FooInterfaceType : InterfaceType
+    {
+        protected override void Configure(IInterfaceTypeDescriptor descriptor)
+        {
+            descriptor.Name("foo")
+                .Field("description")
+                .Type<NonNullType<StringType>>();
+        }
+    }
+
+    public class FooImplType : ObjectType
+    {
+        private readonly string name;
+
+        public FooImplType(string name)
+        {
+            this.name = name;
+        }
+
+        protected override void Configure(IObjectTypeDescriptor descriptor)
+        {
+            descriptor.Name("Foo");
+        }
     }
 }
