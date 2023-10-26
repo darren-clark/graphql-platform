@@ -29,7 +29,7 @@ public class RequiresDirectiveTests : FederationTypesTestBase
     }
 
     [Fact]
-    public void AnnotateProvidesToFieldSchemaFirst()
+    public void AnnotateRequiresToFieldSchemaFirst()
     {
         // arrange
         Snapshot.FullName();
@@ -77,7 +77,7 @@ public class RequiresDirectiveTests : FederationTypesTestBase
     }
 
     [Fact]
-    public void AnnotateProvidesToFieldCodeFirst()
+    public void AnnotateRequiresToFieldCodeFirst()
     {
         // arrange
         Snapshot.FullName();
@@ -129,7 +129,7 @@ public class RequiresDirectiveTests : FederationTypesTestBase
     }
 
     [Fact]
-    public void AnnotateProvidesToClassAttributePureCodeFirst()
+    public void AnnotateRequiresToClassAttributePureCodeFirst()
     {
         // arrange
         Snapshot.FullName();

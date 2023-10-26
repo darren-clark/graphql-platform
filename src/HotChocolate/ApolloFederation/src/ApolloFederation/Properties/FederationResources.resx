@@ -180,4 +180,25 @@
   <data name="ResolveReference_MustBeMethod" xml:space="preserve">
     <value>The expression must refer to a method representing the reference resolver.</value>
   </data>
+  <data name="LinkDirective_Description" xml:space="preserve">
+    <value>Used to import an external schema.</value>
+  </data>
+  <data name="OverrideDirective_Description" xml:space="preserve">
+    <value>Indicates that an object field is now resolved by this subgraph instead of another subgraph where it's also defined. This enables you to migrate a field from one subgraph to another.</value>
+  </data>
+  <data name="InaccessibleDirective_Description" xml:space="preserve">
+    <value>Indicates that a definition in the subgraph schema should be omitted from the router's API schema, even if that definition is also present in other subgraphs. This means that the field is not exposed to clients at all.</value>
+  </data>
+  <data name="ShareableDirective_Description" xml:space="preserve">
+    <value>Indicates that an object type's field is allowed to be resolved by multiple subgraphs (by default in Federation 2, object fields can be resolved by only one subgraph).</value>
+  </data>
+  <data name="FieldDescriptorExtensions_Override_From_CannotBeNullOrEmpty" xml:space="preserve">
+    <value>Value connot be null or empty.</value>
+  </data>
+  <data name="Feature_Shareable" xml:space="preserve">
+    <value>@shareable directive</value>
+  </data>
+  <data name="ThrowHelper_Minimum_Version_Invalid" xml:space="preserve">
+    <value>Federation version of "Minimum" is invalid in this context.</value>
+  </data>
 </root>

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HotChocolate.ApolloFederation.Constants;
 using HotChocolate.Language;

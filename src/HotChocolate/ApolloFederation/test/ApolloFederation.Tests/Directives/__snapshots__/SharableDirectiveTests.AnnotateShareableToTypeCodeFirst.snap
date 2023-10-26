@@ -1,0 +1,14 @@
+﻿schema {
+  query: Query
+}
+
+type Product @shareable {
+  name: String
+}
+
+type Query {
+  someField(a: Int): Product
+}
+
+"Indicates that an object type's field is allowed to be resolved by multiple subgraphs (by default in Federation 2, object fields can be resolved by only one subgraph)."
+directive @shareable on OBJECT | FIELD_DEFINITION

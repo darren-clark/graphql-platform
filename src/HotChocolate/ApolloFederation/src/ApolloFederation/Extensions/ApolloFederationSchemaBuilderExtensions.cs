@@ -1,5 +1,6 @@
 using HotChocolate.ApolloFederation;
 using AnyType = HotChocolate.ApolloFederation.AnyType;
+using static HotChocolate.ApolloFederation.Constants.WellKnownContextData;
 
 namespace HotChocolate;
 
@@ -21,13 +22,14 @@ public static class ApolloFederationSchemaBuilderExtensions
     /// The <paramref name="builder"/> is <c>null</c>.
     /// </exception>
     public static ISchemaBuilder AddApolloFederation(
-        this ISchemaBuilder builder)
+        this ISchemaBuilder builder, FederationVersion version = FederationVersion.V1)
     {
         if (builder is null)
         {
             throw new ArgumentNullException(nameof(builder));
         }
 
+        builder.ContextData[RequestedVersion] = version;
         builder.AddType<AnyType>();
         builder.AddType<EntityType>();
         builder.AddType<ServiceType>();

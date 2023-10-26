@@ -141,4 +141,13 @@ internal static class ThrowHelper
                 // .SetCode(ErrorCodes.ApolloFederation.RequiresFieldSetNullOrEmpty)
                 .SetExtension(nameof(member), member)
                 .Build());
+
+    /// <summary>
+    /// Apollo version of Minimum provided in context requiring a value
+    /// </summary>
+    public static SchemaException Minimum_Version_Invalid() =>
+        new SchemaException(
+            SchemaErrorBuilder.New()
+                .SetMessage(ThrowHelper_Minimum_Version_Invalid)
+                .Build());
 }

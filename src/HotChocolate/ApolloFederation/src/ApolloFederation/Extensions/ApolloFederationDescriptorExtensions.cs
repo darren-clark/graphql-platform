@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+using HotChocolate.ApolloFederation;
 using HotChocolate.ApolloFederation.Constants;
 using HotChocolate.ApolloFederation.Descriptors;
 using HotChocolate.Language;
@@ -221,6 +224,202 @@ public static partial class ApolloFederationDescriptorExtensions
         descriptor
             .Extend()
             .OnBeforeCreate(d => d.ContextData[ExtendMarker] = true);
+
+        return descriptor;
+    }
+
+    /// <summary>
+    /// Indicate that all fields on a type are allowed to be resolved by multiple subgraphs
+    /// </summary>
+    public static IObjectTypeDescriptor Shareable(this IObjectTypeDescriptor descriptor)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Shareable);
+
+        return descriptor;
+    }
+
+    /// <summary>
+    /// Indicate a field is allowed to be resolved by multiple subgraphs
+    /// </summary>
+    public static IObjectFieldDescriptor Shareable(this IObjectFieldDescriptor descriptor)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Shareable);
+
+        return descriptor;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="descriptor"></param>
+    /// <param name="from"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentException"></exception>
+    public static IObjectFieldDescriptor Override(this IObjectFieldDescriptor descriptor, string from)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        if (string.IsNullOrEmpty(from))
+        {
+            throw new ArgumentException(
+                FieldDescriptorExtensions_Override_From_CannotBeNullOrEmpty,
+                nameof(from));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Override,
+            new ArgumentNode(
+                WellKnownArgumentNames.From,
+                new StringValueNode(from)));
+
+
+        return descriptor;
+    }
+
+    public static IObjectFieldDescriptor Inaccessible(this IObjectFieldDescriptor descriptor)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Inaccessible);
+
+        return descriptor;
+    }
+
+
+    public static IObjectTypeDescriptor Inaccessible(this IObjectTypeDescriptor descriptor)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Inaccessible);
+
+        return descriptor;
+    }
+
+    public static IInterfaceTypeDescriptor Inaccessible(this IInterfaceTypeDescriptor descriptor)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Inaccessible);
+
+        return descriptor;
+    }
+
+    public static IUnionTypeDescriptor Inaccessible(this IUnionTypeDescriptor descriptor)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Inaccessible);
+
+        return descriptor;
+    }
+
+    public static IArgumentDescriptor Inaccessible(this IArgumentDescriptor descriptor)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Inaccessible);
+
+        return descriptor;
+    }
+
+    public static IEnumTypeDescriptor Inaccessible(this IEnumTypeDescriptor descriptor)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Inaccessible);
+
+        return descriptor;
+    }
+
+    public static IEnumValueDescriptor Inaccessible(this IEnumValueDescriptor descriptor)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Inaccessible);
+
+        return descriptor;
+    }
+
+    public static IInputObjectTypeDescriptor Inaccessible(this IInputObjectTypeDescriptor descriptor)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Inaccessible);
+
+        return descriptor;
+    }
+
+    public static IInputFieldDescriptor Inaccessible(this IInputFieldDescriptor descriptor)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+        descriptor.Directive(WellKnownTypeNames.Inaccessible);
+
+        return descriptor;
+    }
+
+    public static ISchemaTypeDescriptor Link(this ISchemaTypeDescriptor descriptor, string url,
+        IReadOnlyList<LinkImport>? import = null, string? @as = null, string? @purpose = null)
+    {
+        if (descriptor is null)
+        {
+            throw new ArgumentNullException(nameof(descriptor));
+        }
+
+
+        descriptor.Directive(WellKnownTypeNames.Link,
+            new[]
+            {
+                new ArgumentNode(WellKnownArgumentNames.Url, new StringValueNode(url)),
+                new ArgumentNode(WellKnownArgumentNames.Import,
+                    import == null
+                        ? NullValueNode.Default
+                        : new ListValueNode(import.Select(i => i.ToValueNode()).ToArray())),
+                new ArgumentNode(WellKnownArgumentNames.As,
+                    @as == null ? NullValueNode.Default : new StringValueNode(@as)),
+                new ArgumentNode(WellKnownArgumentNames.For,
+                    @purpose == null ? NullValueNode.Default : new StringValueNode(@purpose))
+            });
 
         return descriptor;
     }
