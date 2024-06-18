@@ -5,6 +5,8 @@ using HotChocolate.Execution;
 
 namespace HotChocolate.Data.Sorting.Expressions;
 
+using System.Linq;
+
 public class QueryableSortVisitorObjectTests : IClassFixture<SchemaCache>
 {
     private static readonly Bar[] _barEntities =
@@ -66,6 +68,8 @@ public class QueryableSortVisitorObjectTests : IClassFixture<SchemaCache>
             }
         }
     };
+
+    private static readonly Baz[] _bazEntities = _barEntities.Select(b => new Baz() { Bar = b }).ToArray();
 
     private static readonly BarNullable?[] _barNullableEntities =
     {
@@ -599,6 +603,69 @@ public class QueryableSortVisitorObjectTests : IClassFixture<SchemaCache>
             .MatchAsync();
     }
 
+    [Fact]
+    public async Task Create_ObjectString_OrderBy_Flattened()
+    {
+        // arrange
+        var tester = _cache.CreateSchema<Bar, BarSortType>(_barEntities);
+
+        // act
+        var res1 = await tester.ExecuteAsync(
+            QueryRequestBuilder.New()
+                .SetQuery(
+                    "{ root(order: { fooBarString: ASC}) " +
+                    "{ foo{ barString}}}")
+                .Create());
+
+        var res2 = await tester.ExecuteAsync(
+            QueryRequestBuilder.New()
+                .SetQuery(
+                    "{ root(order: { fooBarString: DESC}) " +
+                    "{ foo{ barString}}}")
+                .Create());
+
+        Assert.Null(Assert.IsType<QueryResult>(res1).Errors);
+        Assert.Null(Assert.IsType<QueryResult>(res2).Errors);
+
+        // assert
+        await SnapshotExtensions.AddResult(
+                SnapshotExtensions.AddResult(
+                    Snapshot
+                        .Create(), res1, "ASC"), res2, "DESC")
+            .MatchAsync();
+    }
+
+    [Fact]
+    public async Task Create_ObjectString_OrderBy_Related_Flattened()
+    {
+        // arrange
+        var tester = _cache.CreateSchema<Baz, BazSortType>(_bazEntities);
+
+        // act
+        var res1 = await tester.ExecuteAsync(
+            QueryRequestBuilder.New()
+                .SetQuery(
+                    "{ root(order: { bar: { fooBarString: ASC} }) " +
+                    "{ bar { foo{ barString}}} }")
+                .Create());
+
+        var res2 = await tester.ExecuteAsync(
+            QueryRequestBuilder.New()
+                .SetQuery(
+                    "{ root(order: { bar:  { fooBarString: DESC} }) " +
+                    "{ bar{ foo{ barString}}}}")
+                .Create());
+
+        Assert.Null(Assert.IsType<QueryResult>(res1).Errors);
+        Assert.Null(Assert.IsType<QueryResult>(res2).Errors);
+        // assert
+        await SnapshotExtensions.AddResult(
+                SnapshotExtensions.AddResult(
+                    Snapshot
+                        .Create(), res1, "ASC"), res2, "DESC")
+            .MatchAsync();
+    }
+
     public class Foo
     {
         public int Id { get; set; }
@@ -649,14 +716,43 @@ public class QueryableSortVisitorObjectTests : IClassFixture<SchemaCache>
         public FooNullable? Foo { get; set; }
     }
 
+    public class Baz
+    {
+        public int Id { get; set; }
+        public Bar Bar { get; set; } = null!;
+    }
+
+
     public class BarSortType
         : SortInputType<Bar>
     {
+        protected override void Configure(ISortInputTypeDescriptor<Bar> descriptor)
+        {
+            base.Configure(descriptor);
+            descriptor.Field(b => b.Foo.BarString)
+                .Name("fooBarString");
+        }
     }
 
     public class BarNullableSortType
         : SortInputType<BarNullable>
     {
+        protected override void Configure(ISortInputTypeDescriptor<BarNullable> descriptor)
+        {
+            base.Configure(descriptor);
+            descriptor.Field(b => b.Foo!.BarString)
+                .Name("fooBarString");
+        }
+    }
+
+    public class BazSortType : SortInputType<Baz>
+    {
+        protected override void Configure(ISortInputTypeDescriptor<Baz> descriptor)
+        {
+            descriptor.Field(b => b.Bar)
+                .Type<BarSortType>()
+                .Name("bar");
+        }
     }
 
     public enum BarEnum

@@ -5,6 +5,8 @@ using HotChocolate.Execution;
 
 namespace HotChocolate.Data.Filters;
 
+using System.Linq;
+
 public class QueryableFilterVisitorObjectTests
 {
     private static readonly Bar[] _barEntities =
@@ -106,6 +108,8 @@ public class QueryableFilterVisitorObjectTests
             }
         }
     };
+
+    private static readonly Baz[] _bazEntities = _barEntities.Select(b => new Baz() { Bar = b }).ToArray();
 
     private readonly SchemaCache _cache = new();
 
@@ -623,6 +627,88 @@ public class QueryableFilterVisitorObjectTests
             .MatchAsync();
     }
 
+    [Fact]
+    public async Task Create_ObjectStringEqual_Flattened()
+    {
+        // arrange
+        var tester = _cache.CreateSchema<Bar, BarFilterInput>(_barEntities);
+
+        // act
+        var res1 = await tester.ExecuteAsync(
+            QueryRequestBuilder.New()
+                .SetQuery(
+                    "{ root(where: { fooBarString: { eq: \"testatest\"}}) " +
+                    "{ foo{ barString}}}")
+                .Create());
+
+        var res2 = await tester.ExecuteAsync(
+            QueryRequestBuilder.New()
+                .SetQuery(
+                    "{ root(where: { fooBarString: { eq: \"testbtest\"}}) " +
+                    "{ foo{ barString}}}")
+                .Create());
+
+        var res3 = await tester.ExecuteAsync(
+            QueryRequestBuilder.New()
+                .SetQuery(
+                    "{ root(where: { fooBarString: { eq: null}}){ foo{ barString}}}")
+                .Create());
+
+        Assert.Null(Assert.IsType<QueryResult>(res1).Errors);
+        Assert.Null(Assert.IsType<QueryResult>(res2).Errors);
+        Assert.Null(Assert.IsType<QueryResult>(res3).Errors);
+
+        // assert
+        await Snapshot
+            .Create()
+            .AddResult(res1, "testatest")
+            .AddResult(res2, "testbtest")
+            .AddResult(res3, "null")
+            .MatchAsync();
+    }
+
+    [Fact]
+    public async Task Create_ObjectStringEquals_Related_Flattened()
+    {
+        // arrange
+        var tester = _cache.CreateSchema<Baz, BazFilterInput>(_bazEntities);
+
+        // act
+        // act
+        var res1 = await tester.ExecuteAsync(
+            QueryRequestBuilder.New()
+                .SetQuery(
+                    "{ root(where: { bar: { fooBarString: { eq: \"testatest\"}}}) " +
+                    "{bar { foo{ barString}}}}")
+                .Create());
+
+        var res2 = await tester.ExecuteAsync(
+            QueryRequestBuilder.New()
+                .SetQuery(
+                    "{ root(where: { bar: { fooBarString: { eq: \"testbtest\"}} }) " +
+                    "{bar { foo{ barString}}}}")
+                .Create());
+
+        var res3 = await tester.ExecuteAsync(
+            QueryRequestBuilder.New()
+                .SetQuery(
+                    "{ root(where: { bar: { fooBarString: { eq: null}}}){  bar { foo{ barString}}}}")
+                .Create());
+
+
+        Assert.Null(Assert.IsType<QueryResult>(res1).Errors);
+        Assert.Null(Assert.IsType<QueryResult>(res2).Errors);
+        Assert.Null(Assert.IsType<QueryResult>(res3).Errors);
+        // assert
+        // assert
+        await Snapshot
+            .Create()
+            .AddResult(res1, "testatest")
+            .AddResult(res2, "testbtest")
+            .AddResult(res3, "null")
+            .MatchAsync();
+
+    }
     public class Foo
     {
         public int Id { get; set; }
@@ -667,12 +753,32 @@ public class QueryableFilterVisitorObjectTests
         public FooNullable? Foo { get; set; }
     }
 
+    public class Baz
+    {
+        public int Id { get; set; }
+        public Bar Bar { get; set; } = default!;
+    }
+
     public class BarFilterInput : FilterInputType<Bar>
     {
+        protected override void Configure(IFilterInputTypeDescriptor<Bar> descriptor)
+        {
+            descriptor.Field(t => t.Foo.BarString)
+                .Name("fooBarString");
+        }
     }
 
     public class BarNullableFilterInput : FilterInputType<BarNullable>
     {
+    }
+
+    public class BazFilterInput : FilterInputType<Baz>
+    {
+        protected override void Configure(IFilterInputTypeDescriptor<Baz> descriptor)
+        {
+            descriptor.Field(b => b.Bar)
+                .Type<BarFilterInput>();
+        }
     }
 
     public enum BarEnum
